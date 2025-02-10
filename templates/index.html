@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily News</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --accent: #2563eb;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--primary);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            padding: 1.5rem 1rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .logo {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            font-family: 'Merriweather', serif;
+            letter-spacing: -0.5px;
+        }
+
+        /* Search Section */
+        .search-container {
+            max-width: 680px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="%23999" d="M18 10.5a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z"/><path fill="%23999" d="m21.707 20.293-4.825-4.825A9 9 0 1 0 15.5 16.5l4.825 4.825a1 1 0 0 0 1.414-1.414Z"/></svg>') no-repeat 1rem center;
+            padding-left: 2.5rem;
+            transition: all 0.2s ease;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Articles Grid */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .article-card {
+            background: white;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .article-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .article-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+            font-family: 'Merriweather', serif;
+        }
+
+        .read-more {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .read-more:hover {
+            text-decoration: underline;
+        }
+
+        .read-more::after {
+            content: "→";
+            transition: transform 0.2s ease;
+        }
+
+        .read-more:hover::after {
+            transform: translateX(3px);
+        }
+
+        /* No Results */
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+            font-size: 1.1rem;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .article-card {
+                padding: 1.25rem;
+            }
+
+            .article-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Daily News</div>
+    </header>
+
+    <div class="search-container">
+        <input type="text" 
+               id="searchInput" 
+               placeholder="Search articles..."
+               aria-label="Search articles">
+    </div>
+
+    <div class="container">
+        <div class="no-results">No matching articles found</div>
+        
+        {% for article in articles %}
+        <div class="article-card" data-title="{{ article.title|lower }}">
+            <h2 class="article-title">{{ article.title }}</h2>
+            <a href="{{ url_for('article', id=article.id) }}" class="read-more">
+                Read Full Article
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Optimized Search Functionality
+        const search = () => {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.article-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const matches = card.dataset.title.includes(term);
+                card.style.display = matches ? 'block' : 'none';
+                if(matches) visibleCount++;
+            });
+
+            document.querySelector('.no-results').style.display = 
+                visibleCount > 0 ? 'none' : 'block';
+        };
+
+        // Debounce Function
+        let timeout;
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => search(), 200);
+        });
+    </script>
+</body>
+</html>
