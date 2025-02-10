@@ -8,6 +8,10 @@
     <!-- Fonts & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Plyr Video Player CSS -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    
     <style>
         :root {
             --primary-color: #6366f1;
@@ -82,7 +86,6 @@
             overflow: hidden;
         }
 
-        /* Rich Text Editor Content Styles */
         .article-content blockquote {
             border-left: 4px solid var(--primary-color);
             margin: 1.5rem 0;
@@ -249,7 +252,6 @@
             border-radius: 6px;
         }
 
-        /* Font Size Controls */
         .font-controls {
             position: fixed;
             right: 30px;
@@ -279,7 +281,6 @@
             transform: scale(1.1);
         }
 
-        /* Back Button */
         .back-btn {
             display: inline-flex;
             align-items: center;
@@ -324,7 +325,6 @@
             left: 100%;
         }
 
-        /* Progress Bar */
         .progress-bar {
             position: fixed;
             top: 0;
@@ -335,7 +335,6 @@
             transition: width 0.25s ease-out;
         }
 
-        /* Scroll to Top */
         .scroll-top {
             position: fixed;
             bottom: 30px;
@@ -428,7 +427,6 @@
             animation: fadeIn 0.6s ease-out;
         }
 
-        /* Accessibility */
         .sr-only {
             position: absolute;
             width: 1px;
@@ -447,11 +445,42 @@
             outline: 3px solid rgba(99, 102, 241, 0.4);
             outline-offset: 2px;
         }
+
+        .plyr--video {
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .translation-tooltip {
+            position: fixed;
+            background: #ffffff;
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            font-size: 0.9rem;
+            z-index: 9999;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            border: 1px solid #e2e8f0;
+            max-width: 300px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .translation-tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
     <div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
     
+    <div id="translationTooltip" class="translation-tooltip"></div>
+
     <div class="font-controls">
         <button class="font-btn" id="increaseFont" aria-label="Increase text size">
             <i class="fas fa-plus"></i>
@@ -482,8 +511,50 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vitalets/google-translate-api@0.7.3/browser/index.min.js"></script>
+
     <script>
-        // Font Size Controls
+        const players = Plyr.setup('video, .js-player', {
+            controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+            ratio: '16:9'
+        });
+
+        let isMouseDown = false;
+        let longPressTimer;
+        const tooltip = document.getElementById('translationTooltip');
+
+        document.addEventListener('mousedown', (e) => {
+            longPressTimer = setTimeout(() => {
+                const selection = window.getSelection().toString().trim();
+                if (selection) handleTranslation(selection, e);
+            }, 500);
+        });
+
+        document.addEventListener('mouseup', () => {
+            clearTimeout(longPressTimer);
+        });
+
+        async function handleTranslation(text, event) {
+            try {
+                const { translate } = await import('https://cdn.jsdelivr.net/npm/@vitalets/google-translate-api@0.7.3/browser/index.min.js');
+                const result = await translate(text, { to: 'bn' });
+                
+                tooltip.style.left = `${event.pageX + 15}px`;
+                tooltip.style.top = `${event.pageY + 15}px`;
+                tooltip.textContent = result.text;
+                tooltip.classList.add('visible');
+                
+                setTimeout(() => {
+                    tooltip.classList.remove('visible');
+                }, 3000);
+            } catch (error) {
+                tooltip.textContent = 'Translation failed';
+                tooltip.classList.add('visible');
+                setTimeout(() => tooltip.classList.remove('visible'), 1500);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const savedSize = localStorage.getItem('fontSize');
             if (savedSize) {
@@ -514,7 +585,6 @@
             });
         });
 
-        // Progress Bar
         function updateProgress() {
             const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
             const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
@@ -523,7 +593,6 @@
             document.getElementById('progressBar').setAttribute('aria-valuenow', Math.round(scrolled));
         }
 
-        // Scroll to Top
         function toggleScrollTop() {
             const scrollTop = document.getElementById('scrollTop');
             scrollTop.classList.toggle('show', window.scrollY > 500);
@@ -540,7 +609,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        // Initialize accessibility
         document.getElementById('progressBar').setAttribute('aria-valuenow', 0);
     </script>
 </body>
