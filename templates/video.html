@@ -8,16 +8,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600&display=swap" rel="stylesheet">
-    <!-- HLS.js for HLS support -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
     <style>
         /* Global Reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Raleway", sans-serif;
+            font-family: "Poppins", sans-serif;
         }
 
         /* Page Styling */
@@ -176,9 +174,8 @@
             <div class="loading-overlay" id="loadingText">
                 <i class="fa-solid fa-spinner"></i> Loading...
             </div>
-            <video id="my-video" preload="auto" controls>
-                <!-- Master playlist URL -->
-                <source src="{{ video.master_playlist_url }}" type="application/vnd.apple.mpegurl">
+            <video id="my-video" preload="metadata">
+                <source src="{{ video.link }}" type="video/mp4">
             </video>
         </div>
 
@@ -189,6 +186,7 @@
         </div>
         {% endif %}
 
+        <!-- Back to Home Button -->
         <a href="/" class="back-to-home">
             <i class="fa-solid fa-home"></i> Back to Home
         </a>
@@ -196,56 +194,50 @@
 
     <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
     <script>
-        // HLS.js initialization
-        if (Hls.isSupported()) {
-            const video = document.getElementById('my-video');
-            const hls = new Hls();
-            hls.loadSource(video.src);
-            hls.attachMedia(video);
-        }
+        var video = document.getElementById('my-video');
+        var loadingText = document.getElementById('loadingText');
 
-        // FluidPlayer initialization
+        // Show loading text when buffering
+        video.addEventListener('waiting', function () {
+            loadingText.style.display = 'flex';
+        });
+
+        video.addEventListener('playing', function () {
+            loadingText.style.display = 'none';
+        });
+
+        // FluidPlayer setup
         var myFP = fluidPlayer('my-video', {
             layoutControls: {
                 primaryColor: "#28B8ED",
                 playbackRateEnabled: true,
+                allowDownload: true,
                 fillToContainer: true,
                 autoPlay: false,
-                mute: false,
-                allowTheatre: true,
-                title: "{{ video.title }}",
-                htmlOnPauseBlock: {
-                    html: null,
-                    height: null,
-                    width: null
-                },
-                controlBar: {
-                    autoHide: true,
-                    autoHideTimeout: 3,
-                    animated: true
-                }
-            },
-            vastOptions: {
-                adList: [],
-                adCTAText: false,
-                adText: false,
-                pauseAd: {
-                    enabled: false
-                }
+                preload: "auto",
+                mute: false
             }
         });
 
-        // Loading handler
-        const loadingText = document.getElementById('loadingText');
-        const videoElement = document.getElementById('my-video');
+        // Optimize streaming for slow networks
+        function optimizeStreaming() {
+            var source = video.getElementsByTagName('source')[0];
+            var videoUrl = source.getAttribute('src');
 
-        videoElement.addEventListener('waiting', () => {
-            loadingText.style.display = 'flex';
-        });
+            if (navigator.connection && navigator.connection.effectiveType) {
+                var networkType = navigator.connection.effectiveType;
+                if (networkType === "slow-2g" || networkType === "2g") {
+                    video.setAttribute('src', videoUrl + "?quality=low");
+                } else if (networkType === "3g") {
+                    video.setAttribute('src', videoUrl + "?quality=medium");
+                } else {
+                    video.setAttribute('src', videoUrl);
+                }
+                video.load();
+            }
+        }
 
-        videoElement.addEventListener('playing', () => {
-            loadingText.style.display = 'none';
-        });
+        optimizeStreaming();
     </script>
 </body>
 </html>
