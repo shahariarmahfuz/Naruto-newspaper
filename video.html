@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ video.title }}</title>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* Global Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        /* Page Styling */
+        body {
+            background: #0d0d0d;
+            color: #ffffff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .video-page {
+            max-width: 850px;
+            background: #1c1c1c;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.8s ease-in-out;
+            text-align: center;
+        }
+
+        /* Title */
+        .video-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #28B8ED;
+            margin-bottom: 15px;
+            border-left: 6px solid #28B8ED;
+            padding-left: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .video-title i {
+            color: #FFD700;
+        }
+
+        /* Video Container */
+        .video-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 10px;
+            display: block;
+        }
+
+        /* Loading Animation */
+        .loading-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 18px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 12px 20px;
+            border-radius: 5px;
+            display: none;
+            transition: all 0.3s ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .loading-overlay i {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Description Styling */
+        .description-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 8px;
+        }
+
+        .description-box h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #28B8ED;
+        }
+
+        .description-box p {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #ddd;
+            text-align: justify;
+            margin: 0;
+            white-space: pre-line;
+        }
+
+        /* Back to Home Button */
+        .back-to-home {
+            margin-top: 20px;
+            text-decoration: none;
+            background: #28B8ED;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .back-to-home:hover {
+            background: #1a8db1;
+        }
+
+        /* Keyframe Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .video-title {
+                font-size: 22px;
+            }
+            .description-box p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="video-page">
+        <h1 class="video-title"><i class="fa-solid fa-play-circle"></i> {{ video.title }}</h1>
+        <div class="video-container">
+            <div class="loading-overlay" id="loadingText">
+                <i class="fa-solid fa-spinner"></i> Loading...
+            </div>
+            <video id="my-video" preload="metadata">
+                <source src="{{ video.link }}" type="video/mp4">
+            </video>
+        </div>
+
+        {% if video.description %}
+        <div class="description-box">
+            <h3><i class="fa-solid fa-align-left"></i> Description:</h3>
+            <p>{{ video.description|safe }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Back to Home Button -->
+        <a href="/" class="back-to-home">
+            <i class="fa-solid fa-home"></i> Back to Home
+        </a>
+    </div>
+
+    <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
+    <script>
+        var video = document.getElementById('my-video');
+        var loadingText = document.getElementById('loadingText');
+
+        // Show loading text when buffering
+        video.addEventListener('waiting', function () {
+            loadingText.style.display = 'flex';
+        });
+
+        video.addEventListener('playing', function () {
+            loadingText.style.display = 'none';
+        });
+
+        // FluidPlayer setup
+        var myFP = fluidPlayer('my-video', {
+            layoutControls: {
+                primaryColor: "#28B8ED",
+                playbackRateEnabled: true,
+                allowDownload: true,
+                fillToContainer: true,
+                autoPlay: false,
+                preload: "auto",
+                mute: false
+            }
+        });
+
+        // Optimize streaming for slow networks
+        function optimizeStreaming() {
+            var source = video.getElementsByTagName('source')[0];
+            var videoUrl = source.getAttribute('src');
+
+            if (navigator.connection && navigator.connection.effectiveType) {
+                var networkType = navigator.connection.effectiveType;
+                if (networkType === "slow-2g" || networkType === "2g") {
+                    video.setAttribute('src', videoUrl + "?quality=low");
+                } else if (networkType === "3g") {
+                    video.setAttribute('src', videoUrl + "?quality=medium");
+                } else {
+                    video.setAttribute('src', videoUrl);
+                }
+                video.load();
+            }
+        }
+
+        optimizeStreaming();
+    </script>
+</body>
+</html>
