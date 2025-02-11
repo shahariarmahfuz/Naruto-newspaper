@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Video Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00c8ff;
+            --secondary: #00ff88;
+            --dark: #0f0f0f;
+            --light: #ffffff;
+            --gray: #aaaaaa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--dark);
+            color: var(--light);
+            line-height: 1.6;
+        }
+
+        /* Enhanced Navigation Bar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(15, 15, 15, 0.98);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1.5rem;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--light);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: var(--primary);
+            position: relative;
+        }
+
+        /* Custom Search Bar */
+        .search-form {
+            position: relative;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 40px;
+            overflow: hidden;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .search-form.active {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 20px 10px 16px;
+            border: none;
+            background: transparent;
+            color: var(--light);
+            font-size: 1rem;
+            outline: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .search-form.active .search-input {
+            opacity: 1;
+        }
+
+        .search-button {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px;
+        }
+
+        .search-button:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-item {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--primary);
+        }
+
+        /* Hero Section Improvements */
+        .hero {
+            margin-top: 100px;
+            padding: 4rem 1rem;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 200, 255, 0.05) 0%, transparent 60%);
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 2.8rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.1;
+            text-shadow: 0 4px 12px rgba(0, 200, 255, 0.2);
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: var(--gray);
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Video Grid Enhancements */
+        .container {
+            max-width: 1400px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 1rem 0;
+        }
+
+        .video-card {
+            background: #1a1a1a;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .video-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 200, 255, 0.25);
+        }
+
+        .thumbnail-container {
+            position: relative;
+            padding-top: 56.25%;
+            overflow: hidden;
+        }
+
+        .thumbnail-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .video-card:hover .thumbnail-image {
+            transform: scale(1.05);
+        }
+
+        .thumbnail-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, 0.8) 100%);
+            display: flex;
+            align-items: flex-end;
+            padding: 1.5rem;
+            opacity: 1;
+        }
+
+        .video-info {
+            padding: 1.5rem;
+        }
+
+        .video-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.75rem;
+            color: var(--light);
+            font-weight: 600;
+        }
+
+        .video-description {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .watch-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.9rem 1.8rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--dark);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .watch-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 200, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* No Results Message */
+        .no-results {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1.1rem;
+            color: var(--gray);
+            font-weight: 400;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .search-form {
+                order: 3;
+                width: 40px;
+                margin: 1rem 0 0 0;
+            }
+
+            .search-form.active {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                margin-top: 80px;
+                padding: 3rem 1rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                gap: 0.75rem;
+            }
+
+            .nav-item span {
+                display: none;
+            }
+
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .watch-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .hero-title {
+                font-size: 1.8rem;
+            }
+
+            .search-input {
+                padding: 10px 20px 10px 16px;
+                font-size: 0.9rem;
+            }
+
+            .search-button {
+                right: 12px;
+                font-size: 0.9rem;
+            }
+
+            .video-info {
+                padding: 1rem;
+            }
+        }
+
+        /* Pagination Improvements */
+        .pagination-container {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .page-link:hover {
+            background: var(--primary);
+            color: var(--dark);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 200, 255, 0.3);
+        }
+
+        /* Footer Enhancements */
+        .footer {
+            background: #0a0a0a;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-text {
+            color: #666;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('home') }}" class="logo">Video<span>Hub</span></a>
+            
+            <form action="/video" method="get" class="search-form" id="searchForm">
+                <input type="text" name="search" placeholder="Search videos..." value="{{ search_query }}" class="search-input" id="searchInput">
+                <button type="submit" class="search-button" id="searchButton">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+
+            <div class="nav-links">
+                <a href="{{ url_for('home') }}" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('video_admin') }}" class="nav-item">
+                    <i class="fas fa-lock"></i>
+                    <span>Admin</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Premium Video Collection</h1>
+            <p class="hero-subtitle">Experience crystal-clear content and exclusive videos in stunning quality</p>
+        </div>
+    </header>
+
+    <!-- Video Grid -->
+    <main class="container">
+        <div class="video-grid">
+            {% if videos %}
+                {% for video in videos %}
+                <div class="video-card">
+                    {% if video.thumbnail %}
+                    <div class="thumbnail-container">
+                        <img src="{{ video.thumbnail }}" alt="{{ video.title }}" class="thumbnail-image">
+                        <div class="thumbnail-overlay">
+                            <i class="fas fa-play play-icon"></i>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="video-info">
+                        <h3 class="video-title">{{ video.title }}</h3>
+                        {% if video.description %}
+                        <p class="video-description">
+                            {{ video.description[:120] }}{% if video.description|length > 120 %}...{% endif %}
+                        </p>
+                        {% endif %}
+                        <a href="{{ url_for('video_player', id=video.id) }}" class="watch-button">
+                            <i class="fas fa-play"></i> Watch Now
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-results">The content itself may not have existed or may have been removed.</p>
+            {% endif %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <div class="pagination">
+                {% if page > 1 %}
+                    <a href="{{ url_for('video_list', page=page-1, search=search_query) }}" class="page-link">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                {% endif %}
+                
+                <span class="page-info">Page {{ page }} of {{ total_pages }}</span>
+                
+                {% if page < total_pages %}
+                    <a href="{{ url_for('video_list', page=page+1, search=search_query) }}" class="page-link">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="footer-text">© 2024 VideoHub - Premium Video Platform</p>
+    </footer>
+
+    <script>
+        // Search Bar Animation
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+
+        searchButton.addEventListener('click', (e) => {
+            if (!searchForm.classList.contains('active')) {
+                e.preventDefault();
+                searchForm.classList.add('active');
+                searchInput.focus();
+            }
+        });
+
+        searchInput.addEventListener('blur', () => {
+            if (searchInput.value === '') {
+                searchForm.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
