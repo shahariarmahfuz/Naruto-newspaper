@@ -13,9 +13,6 @@
     
     <!-- Font Awesome 5 (Correct Link) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    
-    <!-- CKEditor -->
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 
     <style>
         body {
@@ -95,7 +92,7 @@
                     <input type="url" name="thumbnail_link" class="form-control" placeholder="Thumbnail URL (Optional)">
                 </div>
                 <div class="mb-3">
-                    <textarea name="description" id="editor" class="form-control" placeholder="Video Description (Optional)"></textarea>
+                    <textarea name="description" class="form-control" placeholder="Write a short description... (Optional)" rows="3"></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary w-100 fw-bold">Upload Video</button>
             </form>
@@ -108,18 +105,18 @@
                 {% for video in videos %}
                 <div class="col-md-12">
                     <div class="video-card mb-3">
-                        <span class="video-title">{{ video.title }}</span> <!-- কেবল ভিডিও টাইটেল দেখানো হচ্ছে -->
+                        <span class="video-title">{{ video.title }}</span>
                         <div class="btn-group-actions">
                             <a href="{{ url_for('edit_video', id=video.id) }}" 
                                class="btn btn-outline-warning btn-sm btn-sm-rounded"
                                title="Edit">
-                                <i class="fas fa-edit"></i> <!-- Font Awesome Edit Icon -->
+                                <i class="fas fa-edit"></i>
                             </a>
                             <a href="javascript:void(0)" 
                                onclick="openDeleteModal('{{ url_for('delete_video', id=video.id) }}')" 
                                class="btn btn-outline-danger btn-sm btn-sm-rounded"
                                title="Delete">
-                                <i class="fas fa-trash"></i> <!-- Font Awesome Trash Icon -->
+                                <i class="fas fa-trash"></i>
                             </a>
                         </div>
                     </div>
@@ -157,20 +154,9 @@
         function openDeleteModal(deleteUrl) {
             var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
             var confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-            confirmDeleteBtn.href = deleteUrl;  // Set the delete URL on the button
-            modal.show();  // Show the modal
+            confirmDeleteBtn.href = deleteUrl;
+            modal.show();
         }
-    </script>
-
-    <script>
-        // Initialize CKEditor
-        ClassicEditor
-            .create(document.querySelector('#editor'), {
-                toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList']
-            })
-            .catch(error => {
-                console.error(error);
-            });
     </script>
 </body>
 </html>
