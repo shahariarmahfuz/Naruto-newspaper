@@ -4,17 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ video.title }}</title>
-    <link rel="stylesheet" href="https://cdn.jwplayer.com/libraries/abcdefgh.css">
+    <!-- Custom Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- HLS.js for HLS support -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
+        /* Global Reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: "Raleway", sans-serif;
         }
+
+        /* Page Styling */
         body {
             background: #0d0d0d;
             color: #ffffff;
@@ -24,6 +30,7 @@
             align-items: center;
             min-height: 100vh;
         }
+
         .video-page {
             max-width: 850px;
             background: #1c1c1c;
@@ -33,6 +40,8 @@
             animation: fadeIn 0.8s ease-in-out;
             text-align: center;
         }
+
+        /* Title */
         .video-title {
             font-size: 28px;
             font-weight: 600;
@@ -44,9 +53,12 @@
             align-items: center;
             gap: 10px;
         }
+
         .video-title i {
             color: #FFD700;
         }
+
+        /* Video Container */
         .video-container {
             position: relative;
             width: 100%;
@@ -54,21 +66,49 @@
             border-radius: 10px;
             overflow: hidden;
         }
-        .jwplayer {
+
+        video {
+            width: 100%;
             border-radius: 10px;
-            overflow: hidden;
+            display: block;
         }
+
+        /* Loading Animation */
+        .loading-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 18px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 12px 20px;
+            border-radius: 5px;
+            display: none;
+            transition: all 0.3s ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .loading-overlay i {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Description Styling */
         .description-box {
             margin-top: 20px;
             padding: 15px;
             background: rgba(255, 255, 255, 0.07);
             border-radius: 8px;
         }
+
         .description-box h3 {
             font-size: 18px;
             margin-bottom: 10px;
             color: #28B8ED;
         }
+
         .description-box p {
             font-size: 15px;
             line-height: 1.5;
@@ -77,6 +117,8 @@
             margin: 0;
             white-space: pre-line;
         }
+
+        /* Back to Home Button */
         .back-to-home {
             margin-top: 20px;
             text-decoration: none;
@@ -90,9 +132,12 @@
             gap: 8px;
             transition: 0.3s;
         }
+
         .back-to-home:hover {
             background: #1a8db1;
         }
+
+        /* Keyframe Animation */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -103,6 +148,17 @@
                 transform: translateY(0);
             }
         }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive */
         @media (max-width: 600px) {
             .video-title {
                 font-size: 22px;
@@ -117,59 +173,79 @@
     <div class="video-page">
         <h1 class="video-title"><i class="fa-solid fa-play-circle"></i> {{ video.title }}</h1>
         <div class="video-container">
-            <div id="my-video"></div>
+            <div class="loading-overlay" id="loadingText">
+                <i class="fa-solid fa-spinner"></i> Loading...
+            </div>
+            <video id="my-video" preload="auto" controls>
+                <!-- Master playlist URL -->
+                <source src="{{ video.master_playlist_url }}" type="application/vnd.apple.mpegurl">
+            </video>
         </div>
+
         {% if video.description %}
         <div class="description-box">
             <h3><i class="fa-solid fa-align-left"></i> Description:</h3>
             <p>{{ video.description|safe }}</p>
         </div>
         {% endif %}
+
         <a href="/" class="back-to-home">
             <i class="fa-solid fa-home"></i> Back to Home
         </a>
     </div>
-    <script src="https://cdn.jwplayer.com/libraries/abcdefgh.js"></script>
+
+    <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
     <script>
-        const player = jwplayer('my-video').setup({
-            playlist: [{
-                sources: [{
-                    file: "{{ video.link }}",
-                    type: "hls"
-                }]
-            }],
-            hlshtml: true,
-            width: '100%',
-            aspectratio: '16:9',
-            primary: 'html5',
-            autostart: false,
-            mute: false,
-            displaytitle: false,
-            visualplaylist: false,
-            allowDownload: true,
-            logo: {
-                hide: true
+        // HLS.js initialization
+        if (Hls.isSupported()) {
+            const video = document.getElementById('my-video');
+            const hls = new Hls();
+            hls.loadSource(video.src);
+            hls.attachMedia(video);
+        }
+
+        // FluidPlayer initialization
+        var myFP = fluidPlayer('my-video', {
+            layoutControls: {
+                primaryColor: "#28B8ED",
+                playbackRateEnabled: true,
+                fillToContainer: true,
+                autoPlay: false,
+                mute: false,
+                allowTheatre: true,
+                title: "{{ video.title }}",
+                htmlOnPauseBlock: {
+                    html: null,
+                    height: null,
+                    width: null
+                },
+                controlBar: {
+                    autoHide: true,
+                    autoHideTimeout: 3,
+                    animated: true
+                }
+            },
+            vastOptions: {
+                adList: [],
+                adCTAText: false,
+                adText: false,
+                pauseAd: {
+                    enabled: false
+                }
             }
         });
-        player.addButton(
-            '//assets-jpcust.jwpsrv.com/static/img/icon-quality.svg',
-            'Quality Selector',
-            function() {
-                const qualities = player.getQualityLevels();
-                const current = player.getCurrentQuality();
-                const items = qualities.map((q, index) => {
-                    return {
-                        label: q.label || `${Math.round(q.height)}p`,
-                        callback: () => player.setCurrentQuality(index)
-                    }
-                });
-                player.createMenu({
-                    title: 'Select Quality',
-                    items: items
-                });
-            },
-            'quality'
-        );
+
+        // Loading handler
+        const loadingText = document.getElementById('loadingText');
+        const videoElement = document.getElementById('my-video');
+
+        videoElement.addEventListener('waiting', () => {
+            loadingText.style.display = 'flex';
+        });
+
+        videoElement.addEventListener('playing', () => {
+            loadingText.style.display = 'none';
+        });
     </script>
 </body>
 </html>
