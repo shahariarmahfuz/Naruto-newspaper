@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ video.title }}</title>
+    
     <!-- Custom Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
+    
     <!-- Google Font: Raleway -->
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600&display=swap" rel="stylesheet">
 
@@ -18,7 +18,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Raleway", sans-serif; /* Set Raleway font globally */
+            font-family: "Raleway", sans-serif;
         }
 
         /* Page Styling */
@@ -68,32 +68,10 @@
             overflow: hidden;
         }
 
-        video {
+        /* JW Player Container */
+        #jw-player-container {
             width: 100%;
             border-radius: 10px;
-            display: block;
-        }
-
-        /* Loading Animation */
-        .loading-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #fff;
-            font-size: 18px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 12px 20px;
-            border-radius: 5px;
-            display: none;
-            transition: all 0.3s ease-in-out;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .loading-overlay i {
-            animation: spin 1s linear infinite;
         }
 
         /* Description Styling */
@@ -150,15 +128,6 @@
             }
         }
 
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
         /* Responsive */
         @media (max-width: 600px) {
             .video-title {
@@ -173,13 +142,10 @@
 <body>
     <div class="video-page">
         <h1 class="video-title"><i class="fa-solid fa-play-circle"></i> {{ video.title }}</h1>
+        
         <div class="video-container">
-            <div class="loading-overlay" id="loadingText">
-                <i class="fa-solid fa-spinner"></i> Loading...
-            </div>
-            <video id="my-video" preload="metadata">
-                <source src="{{ video.link }}" type="video/mp4">
-            </video>
+            <!-- JW Player Container -->
+            <div id="jw-player-container"></div>
         </div>
 
         {% if video.description %}
@@ -195,52 +161,20 @@
         </a>
     </div>
 
-    <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
+    <!-- JW Player Script -->
+    <script src="https://cdn.jwplayer.com/libraries/your-jwplayer-key.js"></script>
     <script>
-        var video = document.getElementById('my-video');
-        var loadingText = document.getElementById('loadingText');
-
-        // Show loading text when buffering
-        video.addEventListener('waiting', function () {
-            loadingText.style.display = 'flex';
+        jwplayer("jw-player-container").setup({
+            file: "{{ video.link }}",
+            image: "{{ video.thumbnail if video.thumbnail else 'default-thumbnail.jpg' }}",
+            width: "100%",
+            aspectratio: "16:9",
+            autostart: false,
+            controls: true,
+            playbackRateControls: [0.5, 1, 1.5, 2],
+            preload: "metadata",
+            mute: false
         });
-
-        video.addEventListener('playing', function () {
-            loadingText.style.display = 'none';
-        });
-
-        // FluidPlayer setup
-        var myFP = fluidPlayer('my-video', {
-            layoutControls: {
-                primaryColor: "#28B8ED",
-                playbackRateEnabled: true,
-                allowDownload: true,
-                fillToContainer: true,
-                autoPlay: false,
-                preload: "auto",
-                mute: false
-            }
-        });
-
-        // Optimize streaming for slow networks
-        function optimizeStreaming() {
-            var source = video.getElementsByTagName('source')[0];
-            var videoUrl = source.getAttribute('src');
-
-            if (navigator.connection && navigator.connection.effectiveType) {
-                var networkType = navigator.connection.effectiveType;
-                if (networkType === "slow-2g" || networkType === "2g") {
-                    video.setAttribute('src', videoUrl + "?quality=low");
-                } else if (networkType === "3g") {
-                    video.setAttribute('src', videoUrl + "?quality=medium");
-                } else {
-                    video.setAttribute('src', videoUrl);
-                }
-                video.load();
-            }
-        }
-
-        optimizeStreaming();
     </script>
 </body>
 </html>
